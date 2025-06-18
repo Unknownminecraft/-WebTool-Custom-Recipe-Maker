@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Recipe Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <button id="menu-button">☰</button>
+    <nav id="sidebar">
+        <h3>Menu</h3>
+        <a href="#" id="home-link">Home / Reset</a>
+        <a href="https://github.com/Unknown-Minecraft" target="_blank" rel="noopener noreferrer">Creator's GitHub</a>
+    </nav>
+
+    <div id="app-container">
+        <header>
+            <h1>Custom Recipe Maker</h1>
+        </header>
+
+        <main>
+            <!-- Step 1: Initial Setup -->
+            <section class="section-box">
+                <h2>Initial Setup</h2>
+                <div class="form-group">
+                    <label for="edition-select">Edition:</label>
+                    <div class="input-row">
+                        <select id="edition-select">
+                            <option value="bedrock" selected>Bedrock</option>
+                            <option value="java" disabled>Java (Coming Soon)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="recipe-type-select">* Recipe For:</label>
+                    <div class="input-row">
+                        <select id="recipe-type-select">
+                            <option value="crafting_table">Crafting Table</option>
+                            <option value="furnace">Furnace</option>
+                            <option value="blast_furnace">Blast Furnace</option>
+                            <option value="smoker">Smoker</option>
+                            <option value="campfire">Campfire</option>
+                            <option value="stonecutter">Stonecutter</option>
+                            <option value="brewing_stand">Brewing Stand</option>
+                        </select>
+                    </div>
+                </div>
+                 <div class="form-group">
+                    <label for="version-input">Format Version:</label>
+                    <div class="input-row">
+                        <input type="text" id="version-input" value="1.20.50">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Step 2: Recipe Configuration (Dynamically Shown) -->
+            <div id="recipe-config-area">
+
+                <!-- Crafting UI -->
+                <section id="crafting-ui" class="section-box">
+                    <h2>Crafting Recipe Details</h2>
+                    <div class="form-group">
+                        <label>Recipe Type:</label>
+                        <div class="button-group">
+                            <button id="shaped-btn" class="active">Shaped <span class="tooltip-trigger" data-tooltip="Player needs to place items as designed.">?</span></button>
+                            <button id="shapeless-btn">Shapeless <span class="tooltip-trigger" data-tooltip="Player can place items anywhere in the grid.">?</span></button>
+                        </div>
+                    </div>
+                    
+                    <!-- Shaped Recipe Inputs -->
+                    <div id="shaped-recipe-ui">
+                        <div class="form-group">
+                            <label>* Crafting Pattern (Use #,*,|, A-Z):</label>
+                            <div class="crafting-grid">
+                                <!-- 9 inputs for the 3x3 grid -->
+                                <input type="text" class="grid-input" maxlength="1"> <input type="text" class="grid-input" maxlength="1"> <input type="text" class="grid-input" maxlength="1">
+                                <input type="text" class="grid-input" maxlength="1"> <input type="text" class="grid-input" maxlength="1"> <input type="text" class="grid-input" maxlength="1">
+                                <input type="text" class="grid-input" maxlength="1"> <input type="text" class="grid-input" maxlength="1"> <input type="text" class="grid-input" maxlength="1">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>* Map Symbols to Items (Key):</label>
+                            <div id="key-mapping-area">
+                                <!-- Dynamically populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shapeless Recipe Inputs -->
+                    <div id="shapeless-recipe-ui" class="hidden">
+                         <div class="form-group">
+                            <label>* Ingredients:</label>
+                            <div id="ingredients-list">
+                                <!-- Dynamically populated -->
+                            </div>
+                            <button id="add-ingredient-btn">+ Add Ingredient</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Brewing UI -->
+                <section id="brewing-ui" class="section-box hidden">
+                    <h2>Brewing Recipe Details</h2>
+                    <div class="form-group">
+                        <label for="potion-input">* Potion Type (Input):</label>
+                        <div class="input-row">
+                           <input type="text" id="potion-input" placeholder="e.g., minecraft:potion_type:water">
+                        </div>
+                    </div>
+                     <div class="form-group">
+                        <label for="reagent-input">* Reagent Name:</label>
+                        <div class="input-row">
+                           <input type="text" id="reagent-input" placeholder="e.g., minecraft:nether_wart">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Smelting/Furnace UI -->
+                <section id="smelting-ui" class="section-box hidden">
+                     <h2>Smelting/Cutting Recipe Details</h2>
+                     <div class="form-group">
+                        <label for="smelting-input">* Item Name (Input):</label>
+                        <div class="input-row">
+                           <input type="text" id="smelting-input" placeholder="minecraft:iron_ore">
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Step 3: Output -->
+            <section class="section-box">
+                <h2>Output</h2>
+                <div class="form-group">
+                    <label for="output-item-input">* Item Name (Output):</label>
+                    <div class="input-row">
+                        <input type="text" id="output-item-input" placeholder="minecraft:iron_ingot">
+                    </div>
+                </div>
+                 <div class="form-group">
+                    <label for="output-count-input">Output Amount:</label>
+                    <div class="input-row">
+                        <input type="number" id="output-count-input" value="1" min="1">
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Step 4: Advanced Settings -->
+            <details class="section-box">
+                <summary>Advanced Settings</summary>
+                <div class="form-group">
+                    <label for="identifier-input">* Identifier Name:</label>
+                    <div class="input-row">
+                        <input type="text" id="identifier-input" placeholder="minecraft:my_cool_item">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Unlock Item(s) <span class="tooltip-trigger" data-tooltip="The player won't see this recipe until they obtain this item.">?</span>:</label>
+                    <div id="unlock-items-container">
+                        <!-- JS will add items here -->
+                    </div>
+                     <button id="add-unlock-btn">+ Add Unlock Item</button>
+                </div>
+                <div class="form-group">
+                    <label for="priority-input">Priority (e.g., -1, 0, 1):</label>
+                    <div class="input-row">
+                        <input type="number" id="priority-input" placeholder="Leave empty for default">
+                    </div>
+                </div>
+            </details>
+
+            <!-- Step 5: Process -->
+            <button id="process-btn">Process Recipe</button>
+
+            <!-- Step 6: JSON Output -->
+            <section id="json-output-area" class="hidden">
+                <h2>Generated JSON</h2>
+                <div class="output-controls">
+                    <button id="copy-btn">Copy</button>
+                    <button id="download-btn">Download .json</button>
+                </div>
+                <pre><code id="json-code"></code></pre>
+            </section>
+
+        </main>
+    </div>
+
+    <footer>
+        <p>This site is not affiliated with Mojang.</p>
+        <p>Creator: Unknown_Minecraft</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
