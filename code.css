@@ -1,0 +1,286 @@
+/* Import Font */
+@font-face {
+    font-family: 'MinecraftTen';
+    src: url('assets/webfonts/Minecraft-Ten-ed29a.otf') format('opentype');
+}
+
+/* Global Styles & Resets */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: #F5AD42; /* Orange background */
+    color: #333;
+    line-height: 1.6;
+}
+
+/* Layout */
+#app-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    background-color: #CEF57F; /* Light green container */
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background-color: #006400; /* Deep green */
+    color: white;
+    border-radius: 10px 10px 0 0;
+}
+
+h1 {
+    font-family: 'MinecraftTen', sans-serif;
+    font-size: 2.5rem;
+}
+
+h2 {
+    font-family: 'MinecraftTen', sans-serif;
+    color: #006400; /* Deep green */
+    border-bottom: 2px solid #8AF584;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.section-box {
+    background-color: #8AF584; /* Bright green */
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #78d373;
+    border-radius: 8px;
+}
+
+footer {
+    text-align: center;
+    padding: 1rem;
+    margin-top: 2rem;
+    background-color: #FFC9C9; /* Light pink */
+    font-size: 0.8rem;
+    color: #555;
+}
+
+/* Form Elements */
+.form-group {
+    margin-bottom: 1rem;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+/* Move input boxes to the next line */
+.input-row {
+    display: block;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+#process-btn {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    background-color: #28a745;
+}
+
+#process-btn:hover {
+    background-color: #218838;
+}
+
+.button-group button {
+    margin-right: 10px;
+}
+.button-group button.active {
+    background-color: #006400;
+    font-weight: bold;
+}
+
+/* Specific Component Styles */
+.hidden {
+    display: none !important;
+}
+
+.crafting-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    max-width: 150px;
+}
+
+.grid-input {
+    width: 45px !important;
+    height: 45px;
+    text-align: center;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+}
+
+.key-mapping-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.key-mapping-item .key-symbol {
+    font-weight: bold;
+    margin-right: 10px;
+    font-family: monospace;
+    font-size: 1.2rem;
+}
+
+.key-mapping-item input {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+.delete-btn {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    line-height: 25px;
+    text-align: center;
+    cursor: pointer;
+}
+
+/* Tooltips */
+.tooltip-trigger {
+    display: inline-block;
+    cursor: help;
+    border: 1px solid #aaa;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    text-align: center;
+    line-height: 14px;
+    font-size: 12px;
+    margin-left: 5px;
+    position: relative;
+}
+
+/* JSON Output */
+#json-output-area {
+    background-color: #f3f3f3;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 1rem;
+}
+
+#json-output-area pre {
+    background-color: #2d2d2d;
+    color: #ccc;
+    padding: 1rem;
+    border-radius: 5px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.output-controls {
+    margin-bottom: 1rem;
+}
+.output-controls button {
+    margin-right: 10px;
+}
+
+/* Sidebar Menu */
+#menu-button {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1001;
+    background: #006400;
+    font-size: 1.5rem;
+    border: 1px solid white;
+    width: 45px;
+    height: 45px;
+    line-height: 45px;
+    padding: 0;
+    text-align: center;
+}
+
+#sidebar {
+    position: fixed;
+    top: 0;
+    left: -260px; /* Hidden by default */
+    width: 250px;
+    height: 100%;
+    background-color: #333;
+    color: white;
+    padding: 1.5rem;
+    transition: left 0.3s ease-in-out;
+    z-index: 1000;
+}
+
+#sidebar.visible {
+    left: 0;
+}
+
+#sidebar h3 {
+    margin-top: 40px;
+    border-bottom: 1px solid #555;
+    padding-bottom: 10px;
+}
+
+#sidebar a {
+    display: block;
+    color: white;
+    text-decoration: none;
+    padding: 10px 0;
+    transition: background-color 0.2s;
+}
+
+#sidebar a:hover {
+    background-color: #555;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    body {
+        padding: 0.5rem;
+    }
+    #app-container {
+        width: 100%;
+        margin: 1rem 0;
+        padding: 1rem;
+    }
+    h1 {
+        font-size: 1.8rem;
+    }
+}
