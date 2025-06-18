@@ -3,194 +3,1039 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minecraft Recipe Generator</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Custom recipe maker V_0.02</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Minecraft Font (replace with actual path to your font file) */
+        @font-face {
+            font-family: 'MinecraftSeven';
+            src: url('path/to/Minecraft-Seven-66398.otf') format('opentype'); /* Example path */
+            /* You might need .woff or .woff2 formats for better web compatibility */
+        }
+
+        body {
+            background-color: #F5AD42; /* Outside box color */
+            font-family: sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+        :root {
+            scrollbar-color: #006400 #D3D3D3;
+            scrollbar-width: thin;
+        }
+
+        #page-container {
+            background-color: #CEF57F; /* Large outer box for all content */
+            margin: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .top-bar-container {
+            background-color: #006400; /* Deep green */
+            color: white;
+            padding: 5px 0; /* Reduced padding */
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .top-bar-container h1 {
+            flex-grow: 1;
+            margin: 0;
+            font-size: 1.8em;
+        }
+
+        .content-section {
+            background-color: #8AF584;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+
+        .container { padding: 0; /* Removed padding from inner container as sections handle it */ }
+
+        .edition-selector, .recipe-for-section, .advanced-container, .form-group { margin-bottom: 15px; }
+        .java-warning { color: red; font-size: small; margin-top: 5px; }
+        .recipe-for { font-weight: bold; margin-bottom: 10px; font-size: 1.1em; }
+
+        .recipe-options { display: flex; flex-wrap: wrap; gap: 10px; }
+        .recipe-options button {
+            cursor: pointer;
+            padding: 8px 10px;
+            border: 1px solid #006400;
+            background-color: white;
+            border-radius: 4px;
+            font-family: 'MinecraftSeven', monospace; /* Minecraft font */
+            text-align: center;
+        }
+        .recipe-options button img { display: block; margin: 0 auto 5px auto; height: 24px; width: 24px; }
+        .recipe-options button.active { background-color: #4CAF50; color: white; }
+        .recipe-options button:disabled { cursor: not-allowed; opacity: 0.6; }
+
+        .advanced-container { text-align: center; }
+        .advanced-settings { border: 2px solid gray; padding: 20px; margin: 20px auto; background-color: #D3D3D3; max-width: 600px; text-align: left; }
+        .advanced-settings h3 { text-align: center; margin-top: 0; }
+        .form-group label, .crafting-key-map label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input[type="text"], .form-group input[type="number"], .form-group select, .form-group datalist,
+        .crafting-grid input, .crafting-key-map input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .input-wrapper { display: block; margin-top: 3px; }
+        .tooltip { position: relative; display: inline-block; cursor: pointer; margin-left: 8px; font-weight: bold; color: #006400; }
+        .tooltip .tooltiptext { visibility: hidden; width: 220px; background-color: #555; color: #fff; text-align: center; border-radius: 6px; padding: 5px; position: absolute; z-index: 10; bottom: 125%; left: 50%; margin-left: -110px; opacity: 0; transition: opacity 0.3s; font-size: 0.9em; font-weight: normal;}
+        .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
+        .arrow { text-align: center; font-size: 40px; margin: 10px 0; }
+        .output-slider { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .output-slider input[type="range"] { flex-grow: 1; }
+        .process-button { display: block; width: 60%; max-width: 350px; padding: 15px; font-size: 22px; margin: 20px auto; cursor: pointer; text-align: center; background-color: #006400; color: white; border: none; border-radius: 5px; }
+        .process-button:hover { background-color: #007500; }
+        .json-output-container { margin-top: 20px; display: none; background-color: #333; /* Contrast gray */ border-radius: 5px; padding: 15px; }
+        .json-output-container h3 { color: white; margin-top: 0; }
+        .json-output { background-color: #282c34; /* Darker background for code */ color: #abb2bf; border: 1px solid #ccc; padding: 10px; white-space: pre; overflow-x: auto; position: relative; scrollbar-color: #888 #e0e0e0; scrollbar-width: thin; border-radius: 4px; font-family: monospace; font-size: 0.95em; }
+        .json-output .copy-button, .json-output .download-button { position: absolute; top: 5px; cursor: pointer; background-color: #555; color:white; border: 1px solid #777; padding: 4px 10px; border-radius: 4px; font-size: 0.9em;}
+        .json-output .copy-button { right: 5px; }
+        .json-output .download-button { right: 70px; } /* Adjust as needed */
+        .json-output .copy-button:hover, .json-output .download-button:hover { background-color: #666; }
+        /* JSON Syntax Highlighting */
+        .json-key { color: #61AFEF; } /* Blue for keys like "identifier", "recipe_furnace" */
+        .json-string { color: #98C379; } /* Lime green for strings like format_version, description, tags, output */
+        .json-namespace { color: #E06C75; } /* Red for "minecraft:" or other namespaces */
+        .json-special-value { color: #E06C75; } /* Red for values of keys "identifier", "recipe_furnace" */
+        .json-punctuation { color: #ABB2BF; } /* White/Light gray for "", ,, {}, [] */
+        .json-number { color: #D19A66; } /* Orange for numbers, but prompt said white */
+
+
+        .sidebar { height: 100%; width: 0; position: fixed; z-index: 1001; top: 0; left: 0; background-color: #111; overflow-x: hidden; transition: 0.5s; padding-top: 60px; }
+        .sidebar a { padding: 10px 15px; text-decoration: none; font-size: 22px; color: #818181; display: block; transition: 0.3s; }
+        .sidebar a:hover { color: #f1f1f1; }
+        .sidebar .closebtn { position: absolute; top: 0; right: 25px; font-size: 36px; margin-left: 50px; }
+        #menu-toggle { font-size: 25px; cursor: pointer; background: none; border: none; padding: 10px 15px; color: white; }
+
+        .page { display: none; padding: 10px 0; } /* Main content pages */
+        #main-content-page { display: block; } /* Show by default */
+
+        #about-page { background-color: #FFDAB9; padding: 20px; border-radius: 5px; }
+        #about-page h2, #about-page h3 { color: #333; }
+        .rating-icons span { font-size: 2em; cursor: pointer; margin: 0 5px; }
+        .rating-icons span.selected { opacity: 0.5; cursor: default; }
+        #rating-counts { margin-top: 10px; }
+
+        #development-page {
+            background-image: url('  ');
+            background-size: cover;
+            background-position: center;
+            min-height: 80vh; color: white; text-align: center; padding-top: 50px; border-radius: 5px; position: relative; overflow: hidden;
+        }
+        .petal {
+            position: absolute;
+            background-image: url('<img src="https://i.ibb.co/CKVnRGhB/Picsart-25-06-05-22-41-10-286.png" alt="Picsart-25-06-05-22-41-10-286" border="0"></a>'); /* Placeholder Petal - REPLACE */
+            background-size: contain;
+            background-repeat: no-repeat;
+            width: 20px;
+            height: 30px;
+            animation: fall linear infinite;
+            opacity: 0;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-50px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+
+
+        .footer-info {
+            background-color: #FFC9C9;
+            text-align: center;
+            padding: 10px;
+            font-size: 0.9em;
+            margin-top: 20px;
+            border-radius: 0 0 8px 8px;
+        }
+
+        /* Crafting Grid Specific Styles */
+        #crafting-specific-ui { display: none; /* Hidden by default */ }
+        .crafting-grid-container { margin: 20px auto; display: flex; flex-direction: column; align-items: center; }
+        .crafting-grid { display: grid; grid-template-columns: repeat(3, 50px); grid-template-rows: repeat(3, 50px); gap: 5px; border: 2px solid #777; padding: 5px; background-color: #e0e0e0; width: fit-content; margin-bottom:15px;}
+        .crafting-grid input { text-align: center; font-size: 1.2em; padding: 5px; }
+        .crafting-key-maps-container { margin-top:10px; width: 100%; max-width: 400px;}
+        .crafting-key-map { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .crafting-key-map label { flex-basis: 80px; text-align: right; }
+        .crafting-key-map input { flex-grow: 1; }
+
+        #unlock-items-container .form-group { display: flex; align-items: center; gap: 10px; }
+        #unlock-items-container button { padding: 5px 10px; }
+    </style>
 </head>
 <body>
 
-    <button id="menu-button">☰</button>
-    <nav id="sidebar">
-        <h3>Menu</h3>
-        <a href="#" id="home-link">Home / Reset</a>
-        <a href="https://github.com/Unknown-Minecraft" target="_blank" rel="noopener noreferrer">Creator's GitHub</a>
-    </nav>
-
-    <div id="app-container">
-        <header>
-            <h1>Custom Recipe Maker</h1>
-        </header>
-
-        <main>
-            <!-- Step 1: Initial Setup -->
-            <section class="section-box">
-                <h2>Initial Setup</h2>
-                <div class="form-group">
-                    <label for="edition-select">Edition:</label>
-                    <div class="input-row">
-                        <select id="edition-select">
-                            <option value="bedrock" selected>Bedrock</option>
-                            <option value="java" disabled>Java (Coming Soon)</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="recipe-type-select">* Recipe For:</label>
-                    <div class="input-row">
-                        <select id="recipe-type-select">
-                            <option value="crafting_table">Crafting Table</option>
-                            <option value="furnace">Furnace</option>
-                            <option value="blast_furnace">Blast Furnace</option>
-                            <option value="smoker">Smoker</option>
-                            <option value="campfire">Campfire</option>
-                            <option value="stonecutter">Stonecutter</option>
-                            <option value="brewing_stand">Brewing Stand</option>
-                        </select>
-                    </div>
-                </div>
-                 <div class="form-group">
-                    <label for="version-input">Format Version:</label>
-                    <div class="input-row">
-                        <input type="text" id="version-input" value="1.20.50">
-                    </div>
-                </div>
-            </section>
-
-            <!-- Step 2: Recipe Configuration (Dynamically Shown) -->
-            <div id="recipe-config-area">
-
-                <!-- Crafting UI -->
-                <section id="crafting-ui" class="section-box">
-                    <h2>Crafting Recipe Details</h2>
-                    <div class="form-group">
-                        <label>Recipe Type:</label>
-                        <div class="button-group">
-                            <button id="shaped-btn" class="active">Shaped <span class="tooltip-trigger" data-tooltip="Player needs to place items as designed.">?</span></button>
-                            <button id="shapeless-btn">Shapeless <span class="tooltip-trigger" data-tooltip="Player can place items anywhere in the grid.">?</span></button>
-                        </div>
-                    </div>
-                    
-                    <!-- Shaped Recipe Inputs -->
-                    <div id="shaped-recipe-ui">
-                        <div class="form-group">
-                            <label>* Crafting Pattern (Use #,*,|, A-Z):</label>
-                            <div class="crafting-grid">
-                                <!-- 9 inputs for the 3x3 grid -->
-                                <input type="text" class="grid-input" maxlength="1"> <input type="text" class="grid-input" maxlength="1"> <input type="text" class="grid-input" maxlength="1">
-                                <input type="text" class="grid-input" maxlength="1"> <input type="text" class="grid-input" maxlength="1"> <input type="text" class="grid-input" maxlength="1">
-                                <input type="text" class="grid-input" maxlength="1"> <input type="text" class="grid-input" maxlength="1"> <input type="text" class="grid-input" maxlength="1">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>* Map Symbols to Items (Key):</label>
-                            <div id="key-mapping-area">
-                                <!-- Dynamically populated by JS -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Shapeless Recipe Inputs -->
-                    <div id="shapeless-recipe-ui" class="hidden">
-                         <div class="form-group">
-                            <label>* Ingredients:</label>
-                            <div id="ingredients-list">
-                                <!-- Dynamically populated -->
-                            </div>
-                            <button id="add-ingredient-btn">+ Add Ingredient</button>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Brewing UI -->
-                <section id="brewing-ui" class="section-box hidden">
-                    <h2>Brewing Recipe Details</h2>
-                    <div class="form-group">
-                        <label for="potion-input">* Potion Type (Input):</label>
-                        <div class="input-row">
-                           <input type="text" id="potion-input" placeholder="e.g., minecraft:potion_type:water">
-                        </div>
-                    </div>
-                     <div class="form-group">
-                        <label for="reagent-input">* Reagent Name:</label>
-                        <div class="input-row">
-                           <input type="text" id="reagent-input" placeholder="e.g., minecraft:nether_wart">
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Smelting/Furnace UI -->
-                <section id="smelting-ui" class="section-box hidden">
-                     <h2>Smelting/Cutting Recipe Details</h2>
-                     <div class="form-group">
-                        <label for="smelting-input">* Item Name (Input):</label>
-                        <div class="input-row">
-                           <input type="text" id="smelting-input" placeholder="minecraft:iron_ore">
-                        </div>
-                    </div>
-                </section>
-            </div>
-
-            <!-- Step 3: Output -->
-            <section class="section-box">
-                <h2>Output</h2>
-                <div class="form-group">
-                    <label for="output-item-input">* Item Name (Output):</label>
-                    <div class="input-row">
-                        <input type="text" id="output-item-input" placeholder="minecraft:iron_ingot">
-                    </div>
-                </div>
-                 <div class="form-group">
-                    <label for="output-count-input">Output Amount:</label>
-                    <div class="input-row">
-                        <input type="number" id="output-count-input" value="1" min="1">
-                    </div>
-                </div>
-            </section>
-            
-            <!-- Step 4: Advanced Settings -->
-            <details class="section-box">
-                <summary>Advanced Settings</summary>
-                <div class="form-group">
-                    <label for="identifier-input">* Identifier Name:</label>
-                    <div class="input-row">
-                        <input type="text" id="identifier-input" placeholder="minecraft:my_cool_item">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Unlock Item(s) <span class="tooltip-trigger" data-tooltip="The player won't see this recipe until they obtain this item.">?</span>:</label>
-                    <div id="unlock-items-container">
-                        <!-- JS will add items here -->
-                    </div>
-                     <button id="add-unlock-btn">+ Add Unlock Item</button>
-                </div>
-                <div class="form-group">
-                    <label for="priority-input">Priority (e.g., -1, 0, 1):</label>
-                    <div class="input-row">
-                        <input type="number" id="priority-input" placeholder="Leave empty for default">
-                    </div>
-                </div>
-            </details>
-
-            <!-- Step 5: Process -->
-            <button id="process-btn">Process Recipe</button>
-
-            <!-- Step 6: JSON Output -->
-            <section id="json-output-area" class="hidden">
-                <h2>Generated JSON</h2>
-                <div class="output-controls">
-                    <button id="copy-btn">Copy</button>
-                    <button id="download-btn">Download .json</button>
-                </div>
-                <pre><code id="json-code"></code></pre>
-            </section>
-
-        </main>
+    <div id="mySidebar" class="sidebar">
+        <a href="javascript:void(0)" class="closebtn" onclick="toggleNav()">x</a>
+        <a href="#" onclick="showPage('main-content-page', 'Custom recipe maker V_0.02')">Recipe Maker</a>
+        <a href="#" onclick="showPage('development-page', 'Under Development')">Still in Development</a>
+        <a href="#" onclick="showPage('about-page', 'About & Changelog')">About</a>
     </div>
 
-    <footer>
-        <p>This site is not affiliated with Mojang.</p>
-        <p>Creator: Unknown_Minecraft</p>
-    </footer>
+    <div id="page-container">
+        <div class="top-bar-container">
+            <button id="menu-toggle" onclick="toggleNav()">&#9776;</button>
+            <h1 id="main-title">Custom recipe maker V_0.02</h1>
+        </div>
 
-    <script src="script.js"></script>
+        <div id="main-ui-content"> <div id="main-content-page" class="page">
+                <div class="content-section">
+                    <div class="edition-selector">
+                        <label><input type="radio" name="edition" value="java" onchange="toggleWarning()"> Java</label>
+                        <label><input type="radio" name="edition" value="bedrock" checked onchange="toggleWarning()"> Bedrock</label>
+                        <p id="java-warning" class="java-warning" style="display: none;">Current version does not support java edition</p>
+                    </div>
+                </div>
+
+                <div class="content-section" id="recipe-meta-section">
+                    <div class="recipe-for-section">
+                        <p class="recipe-for">Recipe for <span id="recipe-name-display">furnace</span></p>
+                        <div class="recipe-options">
+                            <button id="btn-furnace" onclick="selectRecipeType(this, 'furnace')" class="active">
+                                <img src="https://i.ibb.co/b5cGJ9kK/Lit-Furnace-S-BE2.png" alt="Lit-Furnace-S-BE2" border="0"></a>Furnace
+                            </button>
+
+                            <button id="btn-blast-furnace" onclick="selectRecipeType(this, 'blast_furnace')">
+                                <img src="https://i.ibb.co/XkvBQtZH/Blast-Furnace-S-BE1.png" alt="Blast-Furnace-S-BE1" border="0"></a>Blast Furnace
+                            </button>
+                            <button id="btn-campfire" onclick="selectRecipeType(this, 'campfire')">
+                                <img src="https://i.ibb.co/hFnzVp70/image0.jpg" alt="image0" border="0"></a>Campfire
+                            </button>
+                            <button id="btn-smoker" onclick="selectRecipeType(this, 'smoker')">
+                                <img src="https://i.ibb.co/WWJSPfX5/Smoker-S-JE2.png" alt="Smoker-S-JE2" border="0"></a>Smoker
+                            </button>
+                            <button id="btn-crafting-table" onclick="selectRecipeType(this, 'crafting_table')">
+                                <img src="https://i.ibb.co/PZTxf4jk/Crafting-Table-JE3-BE2.png" alt="Crafting-Table-JE3-BE2" border="0"></a>Crafting Table (beta)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="common-recipe-settings"> <div class="content-section" id="version-section">
+                        <div class="form-group">
+                            <label for="version-select">Version:</label>
+                            <span class="input-wrapper">
+                                <input list="versions" id="version-select" name="version-select" value="1.21.50">
+                            </span>
+                            <datalist id="versions">
+                                <option value="1.20"><option value="1.21.10"><option value="1.21.50"><option value="1.21.80"><option value="1.22.0">
+                            </datalist>
+                        </div>
+                    </div>
+
+                    <div id="furnace-like-inputs"> <div class="content-section">
+                            <div class="form-group">
+                                <label for="item-name1">* Item Name (Input):
+                                    <span class="tooltip">?
+                                        <span class="tooltiptext">Type the input item name, i.e. minecraft:chicken</span>
+                                    </span>
+                                </label>
+                                <span class="input-wrapper">
+                                    <input type="text" id="item-name1" placeholder="e.g., minecraft:raw_iron" list="item-suggestions">
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="crafting-specific-ui"> <div class="content-section">
+                             <p style="text-align:center; font-weight:bold;">Define Crafting Pattern (e.g., #, *, A-Z, 1-9)</p>
+                            <div class="crafting-grid-container">
+                                <div class="crafting-grid" id="crafting-grid">
+                                    </div>
+                                <div class="crafting-key-maps-container" id="crafting-key-maps-container">
+                                    </div>
+                            </div>
+                            <div class="form-group" id="shapeless-ingredients-container" style="display:none;">
+                                <label>Ingredients (for Shapeless Recipe - up to 9):</label>
+                                </div>
+                        </div>
+                    </div>
+
+                     <div class="arrow">⬇️</div>
+
+                    <div class="content-section">
+                        <div class="form-group">
+                            <label for="output-name">* Item Name (Output):
+                                 <span class="tooltip">?
+                                    <span class="tooltiptext">Type the output item name, i.e. minecraft:cooked_chicken</span>
+                                </span>
+                            </label>
+                             <span class="input-wrapper">
+                                <input type="text" id="output-name" placeholder="e.g., minecraft:iron_ingot" list="item-suggestions" oninput="updateIdentifierDefault()">
+                             </span>
+                        </div>
+                    </div>
+
+                    <div class="content-section" id="output-number-section">
+                        <div class="form-group">
+                            <label for="output-no">Output No.:
+                                <span class="tooltip">?
+                                    <span class="tooltiptext">How many do you want in return? (1-64)</span>
+                                </span>
+                            </label>
+                            <div class="output-slider">
+                                <span id="slider-value-display" style="font-weight: bold; min-width: 25px;">1</span>
+                                <input type="range" id="output-no-slider" min="1" max="64" value="1" oninput="updateSliderValue(this.value, 'output-no-value', 'slider-value-display')">
+                                <input type="number" id="output-no-value" min="1" max="64" value="1" oninput="updateSlider(this.value, 'output-no-slider', 'slider-value-display')" style="width: 70px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="content-section">
+                    <div class="advanced-container">
+                        <button onclick="toggleAdvanced()">Advanced Settings</button>
+                        <label class="switch" style="margin-left: 10px;">
+                            <input type="checkbox" id="remember-settings"> Remember
+                        </label>
+                    </div>
+
+                    <div id="advanced-settings-panel" class="advanced-settings" style="display: none;">
+                        <h3>Advanced Settings</h3>
+                        <div class="form-group">
+                            <label for="identifier-name">Identifier name:</label>
+                            <span class="input-wrapper">
+                                <input type="text" id="identifier-name" value="deco:output_name" oninput="validateIdentifierFormat()">
+                            </span>
+                             <small>Format: `namespace:item_name`. If untouched, `output_name` will be used.</small>
+                        </div>
+
+                        <div id="advanced-can-use-in" class="form-group">
+                            <label>Can use in (Bypasses main recipe type for tags):</label>
+                            <label><input type="checkbox" name="can-use" value="furnace"> Furnace</label>
+                            <label><input type="checkbox" name="can-use" value="campfire"> Campfire</label>
+                            <label><input type="checkbox" name="can-use" value="smoker"> Smoker</label>
+                        </div>
+
+                        <div id="advanced-crafting-options" style="display:none;">
+                            <div class="form-group">
+                                <label for="crafting-recipe-type">Recipe Type:
+                                    <span class="tooltip">?
+                                        <span id="crafting-type-tooltip-text" class="tooltiptext">Select shaped or shapeless.</span>
+                                    </span>
+                                </label>
+                                <select id="crafting-recipe-type" onchange="updateCraftingUI()">
+                                    <option value="minecraft:recipe_shaped">Shaped (Pattern matters)</option>
+                                    <option value="minecraft:recipe_shapeless">Shapeless (Order doesn't matter)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Unlock Item(s):
+                                     <span class="tooltip">?
+                                        <span class="tooltiptext">Player needs this item to see the recipe.</span>
+                                    </span>
+                                </label>
+                                <div id="unlock-items-container">
+                                    </div>
+                                <button type="button" onclick="addUnlockItemField()">Add +</button>
+                                <small>Max 8 unlock items.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+<button class="process-button" onclick="processRecipe()">⚙️
+ Process</button>
+
+
+                <div id="json-output-area" class="json-output-container">
+                    <h3>Generated JSON</h3>
+                    <div class="json-output">
+                        <button class="copy-button" onclick="copyJson(this)">Copy</button>
+                        <button class="download-button" onclick="downloadJson()">Download JSON</button>
+                        <code id="json-code-display"></code>
+                    </div>
+                </div>
+            </div>
+
+            <div id="about-page" class="page">
+                <h2>ABOUT</h2>
+                <p>Creator: Unknown_Minecraft</p>
+                <p><i class="fab fa-discord"></i> Discord: <a href="https://discord.com/invite/" target="_blank" rel="noopener noreferrer">invite link</a></p>
+                <p><i class="fab fa-youtube"></i> YouTube: <a href="https://youtube.com/@decodik?si=JNDw6kN0m" target="_blank" rel="noopener noreferrer">DecodingM Network</a></p>
+                <hr>
+                <h3>CHANGE-LOG</h3>
+                <p><strong>Version 0.02</strong>: Crafting table (beta) with shaped/shapeless recipes, UI overhaul, advanced crafting options (unlock items), JSON syntax highlighting & download, improved styling, About page enhancements with rating, 'Still in Development' page with animation, various fixes and minor improvements.</p>
+                <p><strong>Version 0.01</strong>: Crafting recipes of furnace, Blast furnace, campfire, smoker added.</p>
+                <hr>
+                <h3>Rate this Tool:</h3>
+                <div class="rating-icons">
+                    <span onclick="rateTool(this, '😁')">😁</span>
+                    <span onclick="rateTool(this, '')"></span>
+                    <span onclick="rateTool(this, '')"></span>
+                    <span onclick="rateTool(this, '')"></span>
+                    <span onclick="rateTool(this, '')"></span>
+                </div>
+                <div id="rating-counts"></div>
+                <p id="rating-message" style="font-style: italic;"></p>
+            </div>
+
+            <div id="development-page" class="page">
+                 <h2 style="background-color: rgba(0,0,0,0.5); padding:10px; border-radius:5px;">(STILL IN DEVELOPMENT)</h2>
+                 </div>
+        </div> <datalist id="item-suggestions">
+            <option value="minecraft:coal"><option value="minecraft:iron_ingot"><option value="minecraft:gold_ingot"><option value="minecraft:diamond">
+            <option value="minecraft:oak_log"><option value="minecraft:oak_planks"><option value="minecraft:stick">
+            <option value="minecraft:cobblestone"><option value="minecraft:stone"><option value="minecraft:sand"><option value="minecraft:glass">
+            <option value="minecraft:raw_iron"><option value="minecraft:raw_gold"><option value="minecraft:raw_copper">
+            <option value="minecraft:beef"><option value="minecraft:cooked_beef"><option value="minecraft:porkchop"><option value="minecraft:cooked_porkchop">
+            <option value="minecraft:chicken"><option value="minecraft:cooked_chicken"><option value="minecraft:milk_bucket">
+            <option value="minecraft:wheat"><option value="minecraft:bread"><option value="minecraft:sugar_cane"><option value="minecraft:paper">
+            <option value="minecraft:obsidian"><option value="minecraft:ender_pearl">
+        </datalist>
+
+        <div class="footer-info">
+            <p>This site is not associated with Mojang </p>
+            <p>Creator: Unknown_Minecraft</p>
+        </div>
+    </div> <script>
+        let currentRecipeInternalType = 'furnace'; // 'furnace', 'blast_furnace', 'campfire', 'smoker', 'crafting_table'
+        let isNavOpen = false;
+        const MAX_UNLOCK_ITEMS = 8;
+
+        // --- Page Navigation & UI Toggling ---
+        function toggleNav() {
+            const sidebar = document.getElementById("mySidebar");
+            const pageContainer = document.getElementById("page-container"); // Use page-container for margin shift
+            const menuToggle = document.getElementById("menu-toggle");
+            if (isNavOpen) {
+                sidebar.style.width = "0";
+                pageContainer.style.marginLeft = "0";
+                menuToggle.innerHTML = "&#9776;";
+                isNavOpen = false;
+            } else {
+                sidebar.style.width = "250px"; // Adjust as needed
+                pageContainer.style.marginLeft = "250px"; // Adjust as needed
+                menuToggle.innerHTML = "&times;";
+                isNavOpen = true;
+            }
+        }
+
+        function showPage(pageId, title) {
+            document.querySelectorAll('.page').forEach(page => page.style.display = 'none');
+            document.getElementById(pageId).style.display = 'block';
+            document.getElementById('main-title').textContent = title;
+            if (pageId === 'development-page') {
+                startPetalAnimation();
+            } else {
+                stopPetalAnimation();
+            }
+            if (isNavOpen) {
+                toggleNav();
+            }
+        }
+
+        function toggleWarning() {
+            if (currentRecipeInternalType === 'crafting_table') return; // Java warning doesn't change for crafting table
+            const isJava = document.querySelector('input[name="edition"]:checked').value === 'java';
+            document.getElementById('java-warning').style.display = isJava ? 'block' : 'none';
+        }
+
+        function toggleAdvanced() {
+            const advancedSettingsPanel = document.getElementById('advanced-settings-panel');
+            advancedSettingsPanel.style.display = advancedSettingsPanel.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // --- Recipe Type Selection and UI Update ---
+        function selectRecipeType(btn, recipeType) {
+            currentRecipeInternalType = recipeType;
+            document.getElementById('recipe-name-display').textContent = recipeType.replace(/_/g, ' ');
+            document.querySelectorAll('.recipe-options button').forEach(button => button.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Reset/update UI based on type
+            document.getElementById('java-warning').style.display = document.querySelector('input[name="edition"]:checked').value === 'java' && recipeType !== 'crafting_table' ? 'block' : 'none';
+            
+            const furnaceInputs = document.getElementById('furnace-like-inputs');
+            const craftingUI = document.getElementById('crafting-specific-ui');
+            const advCanUseIn = document.getElementById('advanced-can-use-in');
+            const advCraftingOpts = document.getElementById('advanced-crafting-options');
+            const outputNumSection = document.getElementById('output-number-section');
+            const versionSection = document.getElementById('version-section');
+
+
+            if (recipeType === 'crafting_table') {
+                furnaceInputs.style.display = 'none';
+                craftingUI.style.display = 'block';
+                advCanUseIn.style.display = 'none';
+                advCraftingOpts.style.display = 'block';
+                document.querySelector('input[name="edition"][value="bedrock"]').checked = true; // Force bedrock
+                document.getElementById('java-warning').style.display = 'none';
+                updateCraftingUI(); // Initial call for crafting grid/shapeless inputs
+            } else {
+                furnaceInputs.style.display = 'block';
+                craftingUI.style.display = 'none';
+                advCanUseIn.style.display = 'block';
+                advCraftingOpts.style.display = 'none';
+                outputNumSection.style.display = 'block';
+                versionSection.style.display = 'block';
+            }
+            // Ensure "Process" button and JSON output area are always potentially visible outside this logic
+            document.getElementById('json-output-area').style.display = 'none'; // Hide JSON on type switch
+        }
+        
+        function updateCraftingUI() {
+            const recipeType = document.getElementById('crafting-recipe-type').value;
+            const gridContainer = document.querySelector('.crafting-grid-container');
+            const shapelessContainer = document.getElementById('shapeless-ingredients-container');
+            const keyMapsContainer = document.getElementById('crafting-key-maps-container');
+            const tooltip = document.getElementById('crafting-type-tooltip-text');
+
+            if (recipeType === 'minecraft:recipe_shaped') {
+                gridContainer.style.display = 'flex';
+                keyMapsContainer.style.display = 'block';
+                shapelessContainer.style.display = 'none';
+                populateCraftingGrid(); // Also handles key map updates
+                tooltip.textContent = "Player needs to place the items as designed in the pattern.";
+            } else { // recipe_shapeless
+                gridContainer.style.display = 'none';
+                keyMapsContainer.style.display = 'none';
+                shapelessContainer.style.display = 'block';
+                populateShapelessInputs();
+                tooltip.textContent = "Allows players to place items anywhere in the crafting table.";
+            }
+        }
+
+
+        // --- Slider and Input Sync ---
+        function updateSliderValue(val, targetValueId, targetDisplayId) {
+            document.getElementById(targetValueId).value = val;
+            if(document.getElementById(targetDisplayId)) document.getElementById(targetDisplayId).textContent = val;
+        }
+        function updateSlider(val, targetSliderId, targetDisplayId) {
+            const numVal = parseInt(val);
+            if (numVal > 64) val = 64;
+            if (numVal < 1) val = 1;
+            document.getElementById(targetSliderId).value = val;
+             if(document.getElementById(targetDisplayId)) document.getElementById(targetDisplayId).textContent = val;
+        }
+
+        // --- Identifier Logic ---
+        function updateIdentifierDefault() {
+            const outputName = document.getElementById('output-name').value.trim();
+            const identifierInput = document.getElementById('identifier-name');
+            if (identifierInput.value === "deco:output_name" || identifierInput.value.startsWith("deco:")) {
+                let actualOutputName = outputName.substring(outputName.indexOf(':') + 1) || outputName;
+                if (!actualOutputName) actualOutputName = "output_name"; // placeholder if output is empty
+                identifierInput.value = `deco:${actualOutputName}`;
+            }
+        }
+        function validateIdentifierFormat(){
+            // Basic visual cue or more complex validation can be added here later
+            // For now, the main check is in processRecipe
+        }
+
+
+        // --- Crafting Grid & Key Maps ---
+        const craftingGridElement = document.getElementById('crafting-grid');
+        const keyMapsContainerElement = document.getElementById('crafting-key-maps-container');
+        let usedSymbols = new Set();
+
+        function populateCraftingGrid() {
+            craftingGridElement.innerHTML = '';
+            usedSymbols.clear();
+            for (let i = 0; i < 9; i++) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.maxLength = 1;
+                input.dataset.index = i;
+                input.id = `grid-cell-${i}`;
+                input.addEventListener('input', handleGridInputChange);
+                craftingGridElement.appendChild(input);
+            }
+            updateKeyMaps(); // Initial empty key maps
+        }
+
+        function handleGridInputChange(event) {
+            const newSymbol = event.target.value.trim();
+            // Simple update, more complex logic for symbol reuse etc. could be added
+            updateKeyMaps();
+        }
+
+        function updateKeyMaps() {
+            const currentSymbolsInGrid = new Set();
+            for (let i = 0; i < 9; i++) {
+                const cellValue = document.getElementById(`grid-cell-${i}`).value.trim();
+                if (cellValue) {
+                    currentSymbolsInGrid.add(cellValue);
+                }
+            }
+
+            keyMapsContainerElement.innerHTML = '';
+            if (currentSymbolsInGrid.size > 0) {
+                 const p = document.createElement('p');
+                 p.textContent = "Map symbols to items:";
+                 p.style.fontWeight = "bold";
+                 keyMapsContainerElement.appendChild(p);
+            }
+
+            currentSymbolsInGrid.forEach(symbol => {
+                const keyMapDiv = document.createElement('div');
+                keyMapDiv.className = 'crafting-key-map';
+                
+                const label = document.createElement('label');
+                label.htmlFor = `key-map-${symbol}`;
+                label.textContent = `"${symbol}":`;
+                
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.id = `key-map-${symbol}`;
+                input.placeholder = 'e.g., minecraft:oak_planks';
+                input.list = 'item-suggestions';
+                
+                keyMapDiv.appendChild(label);
+                keyMapDiv.appendChild(input);
+                keyMapsContainerElement.appendChild(keyMapDiv);
+            });
+            usedSymbols = currentSymbolsInGrid;
+        }
+        
+        function populateShapelessInputs() {
+            const container = document.getElementById('shapeless-ingredients-container');
+            container.innerHTML = '<label>Ingredients (for Shapeless Recipe - up to 9):</label>'; // Reset label
+            for (let i = 0; i < 9; i++) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.id = `shapeless-ingredient-${i}`;
+                input.placeholder = `Ingredient ${i+1} (e.g., minecraft:dye)`;
+                input.list = 'item-suggestions';
+                input.style.marginBottom = '5px';
+                container.appendChild(input);
+            }
+        }
+
+        // --- Unlock Items ---
+        function addUnlockItemField(defaultValue = '') {
+            const container = document.getElementById('unlock-items-container');
+            if (container.children.length >= MAX_UNLOCK_ITEMS) {
+                alert(`Maximum of ${MAX_UNLOCK_ITEMS} unlock items reached.`);
+                return;
+            }
+            const index = container.children.length;
+            const formGroup = document.createElement('div');
+            formGroup.className = 'form-group';
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.id = `unlock-item-${index}`;
+            input.placeholder = 'minecraft:item_to_unlock';
+            input.list = 'item-suggestions';
+            input.value = defaultValue;
+            input.style.flexGrow = "1";
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.textContent = 'Remove';
+            removeBtn.onclick = function() { container.removeChild(formGroup); };
+            
+            formGroup.appendChild(input);
+            formGroup.appendChild(removeBtn);
+            container.appendChild(formGroup);
+        }
+        
+        function getUsedItemNamesForUnlockDefaults() {
+            const itemNames = new Set();
+            if (currentRecipeInternalType === 'crafting_table') {
+                if (document.getElementById('crafting-recipe-type').value === 'minecraft:recipe_shaped') {
+                    usedSymbols.forEach(symbol => {
+                        const itemInput = document.getElementById(`key-map-${symbol}`);
+                        if (itemInput && itemInput.value.trim()) itemNames.add(itemInput.value.trim());
+                    });
+                } else {
+                    for (let i = 0; i < 9; i++) {
+                        const itemInput = document.getElementById(`shapeless-ingredient-${i}`);
+                        if (itemInput && itemInput.value.trim()) itemNames.add(itemInput.value.trim());
+                    }
+                }
+            } else {
+                const input1 = document.getElementById('item-name1').value.trim();
+                if (input1) itemNames.add(input1);
+            }
+            return Array.from(itemNames);
+        }
+
+
+        // --- JSON Processing & Output ---
+        function processRecipe() {
+            const outputNameField = document.getElementById('output-name');
+            const outputName = outputNameField.value.trim();
+            let finalJson = {};
+
+            if (currentRecipeInternalType !== 'crafting_table') {
+                const itemName1 = document.getElementById('item-name1').value.trim();
+                if (!itemName1 || !outputName) {
+                    alert('⚠️ Please fill the required Item Name (Input) and Item Name (Output) to process.');
+                    return;
+                }
+                finalJson = generateFurnaceLikeJson(itemName1, outputName);
+            } else { // Crafting Table
+                if (!outputName) {
+                     alert(' Please fill the required Item Name (Output) to process for crafting table.');
+                    return;
+                }
+                finalJson = generateCraftingJson(outputName);
+                if (!finalJson) return; // Error handled in generateCraftingJson
+            }
+            
+            // Handle identifier name advanced setting
+            const identifierInput = document.getElementById('identifier-name');
+            let identifierValue = identifierInput.value.trim();
+
+            if (!identifierValue.includes(':')) {
+                 alert('Please enter ":" in the Identifier Name. Example: minecraft:oak_log, your_pack:custom_item');
+                 return;
+            }
+
+            if (identifierInput.value === "deco:output_name" || (identifierValue.startsWith("deco:") && identifierValue.endsWith("output_name")) ) {
+                let actualOutputName = outputName.substring(outputName.indexOf(':') + 1) || outputName;
+                if (!actualOutputName) actualOutputName = "placeholder_output"; // Fallback
+                identifierValue = `deco:${actualOutputName}`;
+            }
+            
+            // Apply identifier to the correct part of the JSON
+            if (finalJson["minecraft:recipe_furnace"]) {
+                finalJson["minecraft:recipe_furnace"].description.identifier = identifierValue;
+            } else if (finalJson["minecraft:recipe_shaped"]) {
+                finalJson["minecraft:recipe_shaped"].description.identifier = identifierValue;
+            } else if (finalJson["minecraft:recipe_shapeless"]) {
+                finalJson["minecraft:recipe_shapeless"].description.identifier = identifierValue;
+            }
+
+
+            if (!document.getElementById('remember-settings').checked) {
+                identifierInput.value = 'deco:output_name'; // Reset advanced identifier
+                document.querySelectorAll('#advanced-can-use-in input[name="can-use"]').forEach(cb => cb.checked = false);
+                // Reset crafting advanced settings if any
+                document.getElementById('crafting-recipe-type').value = 'minecraft:recipe_shaped';
+                document.getElementById('unlock-items-container').innerHTML = ''; addUnlockItemField();
+            }
+
+            displayJson(finalJson);
+        }
+
+        function generateFurnaceLikeJson(itemName1, outputName) {
+            let recipeTag = currentRecipeInternalType; // 'furnace', 'blast_furnace', etc.
+            
+            const advancedCanUse = Array.from(document.querySelectorAll('#advanced-can-use-in input[name="can-use"]:checked')).map(cb => cb.value);
+            
+            let tagsArray = [];
+            if (advancedCanUse.length > 0) {
+                 tagsArray = [...advancedCanUse];
+                 if (tagsArray.some(tag => tag === 'campfire')) { // if any selected is campfire
+                    if (!tagsArray.includes('soul_campfire')) tagsArray.push('soul_campfire');
+                 }
+            } else {
+                tagsArray.push(recipeTag);
+                 if (recipeTag === 'campfire') {
+                    if (!tagsArray.includes('soul_campfire')) tagsArray.push('soul_campfire');
+                }
+            }
+
+            return {
+              "format_version": document.getElementById('version-select').value,
+              "minecraft:recipe_furnace": { // This key STAYS recipe_furnace
+                "description": {
+                  "identifier": "deco:output_name" // Placeholder, will be updated
+                },
+                "tags": tagsArray,
+                "input": itemName1,
+                "output": { // Validated structure
+                  "item": outputName,
+                  "count": parseInt(document.getElementById('output-no-value').value, 10)
+                }
+              }
+            };
+        }
+
+        function generateCraftingJson(outputName) {
+            const version = document.getElementById('version-select').value;
+            const recipeType = document.getElementById('crafting-recipe-type').value;
+            const description = { "identifier": "deco:output_name" }; // Placeholder
+            const tags = ["crafting_table"];
+            const result = {
+                "item": outputName,
+                "count": parseInt(document.getElementById('output-no-value').value, 10)
+            };
+
+            // Unlock Items
+            const unlockItems = [];
+            const unlockItemInputs = document.querySelectorAll('#unlock-items-container input[type="text"]');
+            let availableUsedItems = getUsedItemNamesForUnlockDefaults();
+            let usedItemIndex = 0;
+
+            unlockItemInputs.forEach(input => {
+                let itemValue = input.value.trim();
+                if (!itemValue && availableUsedItems.length > 0) { // If empty and defaults available
+                    itemValue = availableUsedItems[usedItemIndex % availableUsedItems.length];
+                    usedItemIndex++;
+                }
+                if (itemValue) {
+                    unlockItems.push({ "item": itemValue });
+                }
+            });
+
+
+            if (recipeType === 'minecraft:recipe_shaped') {
+                const pattern = [];
+                const key = {};
+                let emptyPattern = true;
+
+                for (let r = 0; r < 3; r++) {
+                    let rowString = "";
+                    for (let c = 0; c < 3; c++) {
+                        const cellId = `grid-cell-${r*3 + c}`;
+                        const cellValue = document.getElementById(cellId).value.trim() || " ";
+                        rowString += cellValue;
+                        if (cellValue !== " ") emptyPattern = false;
+                    }
+                    pattern.push(rowString);
+                }
+                 if (emptyPattern && usedSymbols.size === 0) {
+                    alert(" For shaped recipe, please define a pattern or at least one key.");
+                    return null;
+                }
+
+                let allUsedSymbolsMapped = true;
+                usedSymbols.forEach(symbol => {
+                    const keyInput = document.getElementById(`key-map-${symbol}`);
+                    if (keyInput && keyInput.value.trim()) {
+                        key[symbol] = { "item": keyInput.value.trim() };
+                    } else {
+                        allUsedSymbolsMapped = false;
+                    }
+                });
+
+                if (!allUsedSymbolsMapped && usedSymbols.size > 0) {
+                     alert(" Please map all symbols used in the pattern to an item name.");
+                     return null;
+                }
+                 if (Object.keys(key).length === 0 && !emptyPattern) {
+                    alert(" Pattern defined but no keys are mapped to items.");
+                    return null;
+                }
+
+
+                return {
+                    "format_version": version,
+                    "minecraft:recipe_shaped": {
+                        description,
+                        tags,
+                        pattern,
+                        key,
+                        unlock: unlockItems.length > 0 ? unlockItems : undefined, // Omit if empty
+                        result
+                    }
+                };
+
+            } else { // minecraft:recipe_shapeless
+                const ingredients = [];
+                let hasIngredients = false;
+                for (let i = 0; i < 9; i++) {
+                    const ingredientInput = document.getElementById(`shapeless-ingredient-${i}`);
+                    if (ingredientInput && ingredientInput.value.trim()) {
+                        ingredients.push({ "item": ingredientInput.value.trim() });
+                        hasIngredients = true;
+                    }
+                }
+                if (!hasIngredients) {
+                    alert(" Please add at least one ingredient for a shapeless recipe.");
+                    return null;
+                }
+                return {
+                    "format_version": version,
+                    "minecraft:recipe_shapeless": {
+                        description,
+                        tags,
+                        ingredients,
+                        unlock: unlockItems.length > 0 ? unlockItems : undefined, // Omit if empty
+                        result
+                    }
+                };
+            }
+        }
+        
+        function displayJson(jsonObj) {
+            const jsonString = JSON.stringify(jsonObj, (key, value) => {
+                // Remove undefined 'unlock' key if it's empty
+                if (key === 'unlock' && value === undefined) {
+                    return undefined;
+                }
+                return value;
+            }, 2);
+
+            const codeElement = document.getElementById('json-code-display');
+            codeElement.innerHTML = syntaxHighlightJson(jsonString);
+            document.getElementById('json-output-area').style.display = 'block';
+        }
+
+        function syntaxHighlightJson(jsonString) {
+            jsonString = jsonString.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return jsonString.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                let cls = 'json-punctuation'; // Default for numbers, true, false, null, also ":"
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) { // Key
+                        // Specific keys for lime green
+                        if (/"format_version":$/.test(match) || /"description":$/.test(match) || /"tags":$/.test(match) || /"output":$/.test(match) || /"ingredients":$/.test(match) || /"pattern":$/.test(match) || /"key":$/.test(match) || /"result":$/.test(match) || /"unlock":$/.test(match)) {
+                             cls = 'json-string'; // Lime green
+                        } else if (/"identifier":$/.test(match) || /"minecraft:recipe_furnace":$/.test(match) || /"minecraft:recipe_shaped":$/.test(match) || /"minecraft:recipe_shapeless":$/.test(match) ) {
+                             cls = 'json-key'; // Blue
+                        }
+                         else {
+                            cls = 'json-key'; // Default key color (Blue)
+                        }
+                    } else { // String value
+                        if (match.includes("minecraft:") || match.includes("deco:") || /"[a-zA-Z0-9_]+:/.test(match)) { // Check for namespace
+                             // Split string value if it contains a namespace
+                            const parts = match.substring(1, match.length -1).split(':');
+                            if (parts.length === 2 && parts[0] && parts[1]) {
+                                return `<span class="json-punctuation">"</span><span class="json-namespace">${parts[0]}:</span><span class="json-string">${parts[1]}</span><span class="json-punctuation">"</span>`;
+                            } else {
+                                // If it's a value of specific keys like identifier, recipe_furnace
+                                if (/"identifier"/.test(lookBehind(jsonString, arguments[arguments.length-2])) || /"minecraft:recipe_furnace"/.test(lookBehind(jsonString, arguments[arguments.length-2])) ) {
+                                     cls = 'json-special-value'; // Red
+                                } else {
+                                     cls = 'json-string'; // Default string (Lime Green)
+                                }
+                            }
+                        } else {
+                             // If it's a value of specific keys like identifier, recipe_furnace
+                            if (/"identifier"/.test(lookBehind(jsonString, arguments[arguments.length-2])) || /"minecraft:recipe_furnace"/.test(lookBehind(jsonString, arguments[arguments.length-2])) ) {
+                                 cls = 'json-special-value'; // Red
+                            } else {
+                                 cls = 'json-string'; // Default string (Lime Green)
+                            }
+                        }
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'json-key'; // Blue for booleans
+                } else if (/null/.test(match)) {
+                    cls = 'json-key'; // Blue for null
+                } else { // Number
+                    cls = 'json-punctuation'; // White for numbers as requested (though 'json-number' class exists)
+                }
+                // For "minecraft:", "deco:" etc. when they are part of a key like "minecraft:recipe_furnace"
+                if (cls === 'json-key' && match.includes(':')) {
+                     const parts = match.substring(1, match.length-2).split(':'); // Remove quotes and trailing colon
+                     if (parts.length === 2 && parts[0] && parts[1]) {
+                        return `<span class="json-punctuation">"</span><span class="json-namespace">${parts[0]}:</span><span class="json-key">${parts[1]}</span><span class="json-punctuation">":</span>`;
+                     }
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            });
+        }
+        // Helper to look behind for context in regex replacement (simplified)
+        function lookBehind(str, index) {
+            return str.substring(Math.max(0, index - 30), index);
+        }
+
+
+        function copyJson(button) {
+            const jsonCode = document.getElementById('json-code-display').textContent; // Get text content
+            navigator.clipboard.writeText(jsonCode).then(() => {
+                button.textContent = 'Copied!';
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+                alert('Failed to copy JSON.');
+            });
+        }
+
+        function downloadJson() {
+            const jsonString = document.getElementById('json-code-display').textContent;
+            let filename = document.getElementById('output-name').value.trim() || "custom_recipe";
+            filename = filename.replace(/[^a-z0-9_.-]/gi, '_') + ".json"; // Sanitize filename
+
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // --- Petal Animation ---
+        let petalInterval;
+        function startPetalAnimation() {
+            stopPetalAnimation(); // Clear existing if any
+            const container = document.getElementById('development-page');
+            petalInterval = setInterval(() => {
+                if (document.getElementById('development-page').style.display !== 'block') return;
+                const petal = document.createElement('div');
+                petal.className = 'petal';
+                petal.style.left = Math.random() * 100 + 'vw';
+                petal.style.animationDuration = (Math.random() * 5 + 5) + 's'; // 5-10 seconds
+                petal.style.width = (Math.random() * 10 + 15) + 'px'; // 15-25px wide
+                petal.style.height = (Math.random() * 15 + 20) + 'px'; // 20-35px high
+                container.appendChild(petal);
+                setTimeout(() => {
+                    if (petal.parentNode === container) { // Check if still child before removing
+                         container.removeChild(petal);
+                    }
+                }, 10000); // Remove after 10s (max animation duration)
+            }, 300); // New petal every 300ms
+        }
+        function stopPetalAnimation() {
+            clearInterval(petalInterval);
+            const container = document.getElementById('development-page');
+            if(container) { // Check if container exists
+                const petals = container.querySelectorAll('.petal');
+                petals.forEach(p => p.remove());
+            }
+        }
+        
+        // --- Rating System ---
+        function rateTool(element, rating) {
+            if (localStorage.getItem('recipeMakerRated')) {
+                document.getElementById('rating-message').textContent = "You've already rated. Thanks!";
+                return;
+            }
+            localStorage.setItem('recipeMakerRated', 'true');
+            
+            let ratings = JSON.parse(localStorage.getItem('recipeMakerRatings')) || {};
+            ratings[rating] = (ratings[rating] || 0) + 1;
+            localStorage.setItem('recipeMakerRatings', JSON.stringify(ratings));
+            
+            displayRatings();
+            document.getElementById('rating-message').textContent = "Thanks for your rating!";
+            document.querySelectorAll('.rating-icons span').forEach(span => span.classList.add('selected')); // Visually show rated
+        }
+
+        function displayRatings() {
+            const ratings = JSON.parse(localStorage.getItem('recipeMakerRatings')) || {};
+            const countsDiv = document.getElementById('rating-counts');
+            countsDiv.innerHTML = '';
+            for (const rating in ratings) {
+                countsDiv.innerHTML += `${rating}: ${ratings[rating]} votes <br>`;
+            }
+        }
+
+
+        // --- Initial Setup ---
+        window.onload = () => {
+            toggleWarning(); // Initial check for Java warning
+            selectRecipeType(document.getElementById('btn-furnace'), 'furnace'); // Set default
+            updateSliderValue(document.getElementById('output-no-slider').value, 'output-no-value', 'slider-value-display');
+            displayRatings(); // Display any stored ratings
+            addUnlockItemField(); // Add one initial unlock item field
+        };
+
+    </script>
 </body>
 </html>
