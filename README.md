@@ -1,4 +1,7 @@
-# Test
+# Custom Recipe Maker
+# Json to mcpack
+# Custom loot table (only trims)
+# 
 >  [!NOTE]
 > This website is in progress....
 
