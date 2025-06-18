@@ -11,4 +11,4 @@ I think i need help because i don't know proper html coding 🙄
 
 [ ]  [YouTube](https://youtube.com/@decodingmnetwork?si=9pYyn09UfTfrG7oT]
 
-[] [Discord](https://discord.gg/jx4p9x9fQv)
+<a href="https://discord.gg/https://discord.gg/jx4p9x9fQv" target="blank"><img align="center" src="https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/discord.svg" alt="https://discord.gg/jx4p9x9fQv" height="30" width="40" /></a>
